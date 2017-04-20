@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "205265031922",
+    "project_id": "socialnetworksapi-165218"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:205265031922:android:cc3e577bd0a6ef0a",
+        "android_client_info": {
+          "package_name": "com.vitaliyhtc.socialnetworksapi"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "205265031922-fq36gdfjpnt7fbhs0fqt1m0vsri4g40p.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.vitaliyhtc.socialnetworksapi",
+            "certificate_hash": "d4d76e482a9285ee01e08f52d56b00d50448f59e"
+          }
+        },
+        {
+          "client_id": "205265031922-nj13fnolddji7j48q57v5fheop1n4ub5.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAL-Jf0e2UwBEIoXfR9Ns77mPov0wD-mxg"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 1
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
