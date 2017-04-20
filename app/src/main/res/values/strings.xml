@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SocialNetworksAPI</string>
+    <string name="btn_logout">LogOut</string>
 </resources>
