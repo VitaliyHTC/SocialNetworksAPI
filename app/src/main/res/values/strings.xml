@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">SocialNetworksAPI</string>
+
+    <string name="facebook_app_id">1363602183685303</string>
+    <string name="fb_login_protocol_scheme">fb1363602183685303</string>
+
     <string name="btn_logout">LogOut</string>
 </resources>

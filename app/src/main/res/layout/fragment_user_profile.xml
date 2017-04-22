@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_margin="16dp"
+            android:layout_marginTop="16dp"
             android:textSize="20sp"
             tools:text="Iwona Blecharczyk"
             />
@@ -28,7 +28,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_margin="16dp"
+            android:layout_marginTop="16dp"
             android:layout_below="@+id/tv_user_name"
             android:textSize="20sp"
             tools:text="iwona@scania.com"
@@ -39,13 +39,13 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
-            android:layout_margin="16dp"
+            android:layout_marginTop="16dp"
             android:layout_below="@+id/tv_user_email"
             android:textSize="20sp"
             tools:text="20.10.1986"
             />
 
-        <de.hdodenhof.circleimageview.CircleImageView
+        <ImageView
             android:id="@+id/userImageView"
             android:layout_width="200dp"
             android:layout_height="200dp"
