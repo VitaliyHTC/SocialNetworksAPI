@@ -5,4 +5,5 @@
     <string name="fb_login_protocol_scheme">fb1363602183685303</string>
 
     <string name="btn_logout">LogOut</string>
+    <string name="fb_error_login_action_is_canceled">Login action is canceled</string>
 </resources>

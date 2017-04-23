@@ -56,11 +56,11 @@ public class User {
         this.userPhotoUrl = userPhotoUrl;
     }
 
-    public String getAdditionalDataByKey(String key){
+    public String getAdditionalDataByKey(String key) {
         return additionalData.get(key);
     }
 
-    public void putAdditionalData(String key, String value){
-
+    public void putAdditionalData(String key, String value) {
+        additionalData.put(key, value);
     }
 }

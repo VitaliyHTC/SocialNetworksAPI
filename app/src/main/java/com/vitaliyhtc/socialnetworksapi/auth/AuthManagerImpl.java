@@ -4,8 +4,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
-import com.vitaliyhtc.socialnetworksapi.model.User;
-
 public class AuthManagerImpl implements AuthManager {
 
     public static final int AUTH_BY_GOOGLE = 0x00F1;
