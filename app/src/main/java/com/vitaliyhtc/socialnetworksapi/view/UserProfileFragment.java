@@ -54,6 +54,7 @@ public class UserProfileFragment extends Fragment
         mAuthProcess = authProcess;
     }
 
+    @Override
     public void setUser(User user) {
         mUser = user;
     }
