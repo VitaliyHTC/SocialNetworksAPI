@@ -17,7 +17,6 @@ import com.vitaliyhtc.socialnetworksapi.model.User;
 import com.vitaliyhtc.socialnetworksapi.view.BaseView;
 import com.vitaliyhtc.socialnetworksapi.view.LoginFragment;
 import com.vitaliyhtc.socialnetworksapi.view.UserProfileFragment;
-import com.vitaliyhtc.socialnetworksapi.view.UserProfileView;
 
 public class MainActivity extends AppCompatActivity
         implements AuthProcess {
@@ -164,22 +163,15 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void replaceFragment(Fragment fragment) {
-        mFragmentManager.beginTransaction().replace(R.id.container_view, fragment).commit();
+        mFragmentManager.beginTransaction()
+                .setCustomAnimations(R.anim.come_in_anim, R.anim.go_out_anim)
+                .replace(R.id.container_view, fragment).commit();
     }
 
 
     private void onUserSignedIn(User user) {
         mRetainedFragment.setUser(user);
         isUserSignedIn = true;
-
-        Toast.makeText(MainActivity.this,
-                "SignIn successful.\r\n" +
-                        "UserUid: " + user.getUserUid()
-                        + "; Username: " + user.getUserName()
-                        + "; Email: " + user.getUserEmail() + ";"
-                        + " BirthDay: " + user.getAdditionalDataByKey(User.USER_BIRTH_DATE) + ";"
-                        + " Photo: " + user.getUserPhotoUrl() +";"
-                , Toast.LENGTH_SHORT).show();
 
         mLastDisplayedFragment = VALUE_FRAGMENT_USER_PROFILE;
         showUserProfileFragment(user);
