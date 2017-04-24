@@ -8,12 +8,11 @@ public class AuthManagerImpl implements AuthManager {
 
     public static final int AUTH_BY_GOOGLE = 0x00F1;
     public static final int AUTH_BY_FACEBOOK = 0x00F2;
-    public static final int AUTH_BY_NOT_SELECTED = 0x0000;
+    private static final int AUTH_BY_NOT_SELECTED = 0x0000;
 
     private static final String KEY_AUTH_PROVIDER = "authProvider";
 
     private int mCurrentAuthProvider;
-    private boolean isUserSignedIn;
 
     private AuthProvider mGoogleAuthProvider;
     private AuthProvider mFacebookAuthProvider;
@@ -66,6 +65,15 @@ public class AuthManagerImpl implements AuthManager {
             mAuthProvider.signIn(onSignInResultListener);
         } else {
             throw new IllegalArgumentException("No AuthProvider found for given id.");
+        }
+    }
+
+    @Override
+    public void trySilentSignIn(OnSignInResultListener onSignInResultListener) {
+        if (mGoogleAuthProvider.trySilentSignIn(onSignInResultListener)) {
+            mAuthProvider = mGoogleAuthProvider;
+        } else if (mFacebookAuthProvider.trySilentSignIn(onSignInResultListener)) {
+            mAuthProvider = mFacebookAuthProvider;
         }
     }
 

@@ -13,7 +13,6 @@ import com.vitaliyhtc.socialnetworksapi.auth.OnLogOutResultListener;
 import com.vitaliyhtc.socialnetworksapi.auth.OnSignInResultListener;
 import com.vitaliyhtc.socialnetworksapi.fragment.RetainedFragment;
 import com.vitaliyhtc.socialnetworksapi.interfaces.AuthProcess;
-import com.vitaliyhtc.socialnetworksapi.interfaces.ViewChangeProcess;
 import com.vitaliyhtc.socialnetworksapi.model.User;
 import com.vitaliyhtc.socialnetworksapi.view.BaseView;
 import com.vitaliyhtc.socialnetworksapi.view.LoginFragment;
@@ -21,11 +20,13 @@ import com.vitaliyhtc.socialnetworksapi.view.UserProfileFragment;
 import com.vitaliyhtc.socialnetworksapi.view.UserProfileView;
 
 public class MainActivity extends AppCompatActivity
-        implements AuthProcess, ViewChangeProcess {
+        implements AuthProcess {
 
     private static final String KEY_DISPLAYED_FRAGMENT_ID = "displayedFragmentId";
     private static final int VALUE_FRAGMENT_LOGIN = 0x01;
     private static final int VALUE_FRAGMENT_USER_PROFILE = 0x02;
+
+    private static final String KEY_IS_USER_SIGNED_IN = "isUserSignedIn";
 
     private static final String TAG_RETAINED_FRAGMENT = "RetainedFragment";
 
@@ -40,6 +41,8 @@ public class MainActivity extends AppCompatActivity
 
     private OnSignInResultListener mOnSignInResultListener;
     private OnLogOutResultListener mOnLogOutResultListener;
+
+    private boolean isUserSignedIn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +61,10 @@ public class MainActivity extends AppCompatActivity
         restoreFromSavedInstanceState(savedInstanceState);
 
         initFragments();
+
+        if (!isUserSignedIn) {
+            mAuthManager.trySilentSignIn(mOnSignInResultListener);
+        }
     }
 
     @Override
@@ -74,6 +81,7 @@ public class MainActivity extends AppCompatActivity
         super.onSaveInstanceState(outState);
 
         outState.putInt(KEY_DISPLAYED_FRAGMENT_ID, mLastDisplayedFragment);
+        outState.putBoolean(KEY_IS_USER_SIGNED_IN, isUserSignedIn);
         mAuthManager.onSaveInstanceState(outState);
     }
 
@@ -99,18 +107,12 @@ public class MainActivity extends AppCompatActivity
         mAuthManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    @Override
-    public void showUserProfile(User user) {
-        mLastDisplayedFragment = VALUE_FRAGMENT_USER_PROFILE;
-        Fragment fragment = new UserProfileFragment();
-        replaceFragment(fragment);
-        ((UserProfileFragment) fragment).setUser(user);
-    }
-
     private void restoreFromSavedInstanceState(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             mLastDisplayedFragment = savedInstanceState.getInt(KEY_DISPLAYED_FRAGMENT_ID, VALUE_FRAGMENT_LOGIN);
+            isUserSignedIn = savedInstanceState.getBoolean(KEY_IS_USER_SIGNED_IN, false);
         } else {
+            isUserSignedIn = false;
             mLastDisplayedFragment = VALUE_FRAGMENT_LOGIN;
         }
     }
@@ -137,16 +139,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void initRetainedFragment() {
-        // find the retained fragment on activity restarts
         mRetainedFragment = (RetainedFragment) mFragmentManager.findFragmentByTag(TAG_RETAINED_FRAGMENT);
 
-        // create the fragment and data the first time
         if (mRetainedFragment == null) {
-            // add the fragment
             mRetainedFragment = new RetainedFragment();
             mFragmentManager.beginTransaction().add(mRetainedFragment, TAG_RETAINED_FRAGMENT).commit();
-            // load data from a data source or perform any calculation
-            //mRetainedFragment.setData(loadMyData());
         }
     }
 
@@ -158,10 +155,7 @@ public class MainActivity extends AppCompatActivity
             replaceFragment(fragment);
         } else if (mLastDisplayedFragment == VALUE_FRAGMENT_USER_PROFILE &&
                 mRetainedFragment.getUser() != null) {
-            fragment = new UserProfileFragment();
-            ((UserProfileView) fragment).setAuthProcess(MainActivity.this);
-            ((UserProfileView) fragment).setUser(mRetainedFragment.getUser());
-            replaceFragment(fragment);
+            showUserProfileFragment(mRetainedFragment.getUser());
         } else {
             fragment = new LoginFragment();
             ((BaseView) fragment).setAuthProcess(MainActivity.this);
@@ -176,15 +170,26 @@ public class MainActivity extends AppCompatActivity
 
     private void onUserSignedIn(User user) {
         mRetainedFragment.setUser(user);
+        isUserSignedIn = true;
 
         Toast.makeText(MainActivity.this,
                 "SignIn successful.\r\n" +
                         "UserUid: " + user.getUserUid()
                         + "; Username: " + user.getUserName()
                         + "; Email: " + user.getUserEmail() + ";"
+                        + " BirthDay: " + user.getAdditionalDataByKey(User.USER_BIRTH_DATE) + ";"
+                        + " Photo: " + user.getUserPhotoUrl() +";"
                 , Toast.LENGTH_SHORT).show();
 
-        showUserProfile(user);
+        mLastDisplayedFragment = VALUE_FRAGMENT_USER_PROFILE;
+        showUserProfileFragment(user);
+    }
+
+    private void showUserProfileFragment(User user) {
+        Fragment fragment = new UserProfileFragment();
+        ((UserProfileFragment) fragment).setAuthProcess(MainActivity.this);
+        ((UserProfileFragment) fragment).setUser(user);
+        replaceFragment(fragment);
     }
 
     private void onUserLoggedOut() {

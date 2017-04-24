@@ -9,5 +9,6 @@ public interface AuthManager {
     void onSaveInstanceState(Bundle outState);
     void onActivityResult(int requestCode, int resultCode, Intent data);
     void signInWith(int authProvider, OnSignInResultListener onSignInResultListener);
+    void trySilentSignIn(OnSignInResultListener onSignInResultListener);
     void logOut(OnLogOutResultListener onLogOutResultListener);
 }

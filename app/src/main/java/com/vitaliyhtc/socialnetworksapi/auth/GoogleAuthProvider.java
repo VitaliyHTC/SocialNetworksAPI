@@ -12,6 +12,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.vitaliyhtc.socialnetworksapi.model.User;
@@ -40,7 +41,6 @@ public class GoogleAuthProvider implements AuthProvider {
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             GoogleSignInResult result = Auth.GoogleSignInApi.getSignInResultFromIntent(data);
             handleSignInResult(result);
@@ -52,6 +52,21 @@ public class GoogleAuthProvider implements AuthProvider {
         mOnSignInResultListener = onSignInResultListener;
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
         ((AppCompatActivity) mContext).startActivityForResult(signInIntent, RC_SIGN_IN);
+    }
+
+    @Override
+    public boolean trySilentSignIn(OnSignInResultListener onSignInResultListener) {
+        mOnSignInResultListener = onSignInResultListener;
+
+        OptionalPendingResult<GoogleSignInResult> pendingResult =
+                Auth.GoogleSignInApi.silentSignIn(mGoogleApiClient);
+        if (pendingResult.isDone()) {
+            handleSignInResult(pendingResult.get());
+            return true;
+        }
+        // See https://developers.google.com/android/reference/com/google/android/gms/auth/api/signin/GoogleSignInApi
+        // silentSignIn(GoogleApiClient client)
+        return false;
     }
 
     @Override
@@ -67,8 +82,6 @@ public class GoogleAuthProvider implements AuthProvider {
 
 
     private void initGoogle() {
-        // Configure sign-in to request the user's ID, email address, and basic
-        // profile. ID and basic profile are included in DEFAULT_SIGN_IN.
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
                 .requestEmail()
                 .build();
@@ -76,18 +89,12 @@ public class GoogleAuthProvider implements AuthProvider {
         GoogleApiClient.OnConnectionFailedListener onConnectionFailedListener = new GoogleApiClient.OnConnectionFailedListener() {
             @Override
             public void onConnectionFailed(@NonNull ConnectionResult connectionResult) {
-                // An unresolvable error has occurred and Google APIs (including Sign-In) will not
-                // be available.
                 Log.d(TAG, "onConnectionFailed:" + connectionResult);
             }
         };
 
-        // Build a GoogleApiClient with access to the Google Sign-In API and the
-        // options specified by gso.
         mGoogleApiClient = new GoogleApiClient.Builder(mContext)
-                .enableAutoManage(
-                        (AppCompatActivity) mContext /* FragmentActivity */,
-                        onConnectionFailedListener /* OnConnectionFailedListener */)
+                .enableAutoManage((AppCompatActivity) mContext, onConnectionFailedListener)
                 .addApi(Auth.GOOGLE_SIGN_IN_API, gso)
                 .build();
     }
@@ -95,13 +102,11 @@ public class GoogleAuthProvider implements AuthProvider {
     private void handleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
-            // Signed in successfully, show authenticated UI.
             GoogleSignInAccount acct = result.getSignInAccount();
             User user = new User(acct.getId(), acct.getDisplayName(), acct.getEmail(), acct.getPhotoUrl().toString());
 
             mOnSignInResultListener.onSignInSuccess(user);
         } else {
-            // Signed out, show unauthenticated UI.
             mOnSignInResultListener.onSignInError("SignIn failed!");
         }
     }

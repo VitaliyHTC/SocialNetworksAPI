@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 
+import com.facebook.AccessToken;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -18,11 +19,11 @@ import com.vitaliyhtc.socialnetworksapi.model.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.util.Collections;
+import java.util.Arrays;
 
 public class FacebookAuthProvider implements AuthProvider {
 
-    private static final String FB_PERMISSIONS = "publish_actions";
+    private static final String[] FB_PERMISSIONS = {"public_profile", "email", "user_birthday"};
     private static final String FB_KEY_FIELDS = "fields";
     private static final String FB_VALUE_FIELDS = "id,name,email,birthday,picture";
 
@@ -63,8 +64,18 @@ public class FacebookAuthProvider implements AuthProvider {
     @Override
     public void signIn(OnSignInResultListener onSignInResultListener) {
         mOnSignInResultListener = onSignInResultListener;
-        LoginManager.getInstance().logInWithPublishPermissions((Activity) mContext,
-                Collections.singletonList(FB_PERMISSIONS));
+        LoginManager.getInstance().logInWithReadPermissions((Activity) mContext, Arrays.asList(FB_PERMISSIONS));
+    }
+
+    @Override
+    public boolean trySilentSignIn(OnSignInResultListener onSignInResultListener) {
+        mOnSignInResultListener = onSignInResultListener;
+
+        if (AccessToken.getCurrentAccessToken() != null) {
+            executeGraphRequest(AccessToken.getCurrentAccessToken());
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -81,22 +92,7 @@ public class FacebookAuthProvider implements AuthProvider {
                 new FacebookCallback<LoginResult>() {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
-                        GraphRequest request = GraphRequest.newMeRequest(
-                                loginResult.getAccessToken(),
-                                new GraphRequest.GraphJSONObjectCallback() {
-                                    @Override
-                                    public void onCompleted(
-                                            JSONObject object,
-                                            GraphResponse response) {
-                                        mOnSignInResultListener.onSignInSuccess(
-                                                getUserFromJSONObject(object)
-                                        );
-                                    }
-                                });
-                        Bundle parameters = new Bundle();
-                        parameters.putString(FB_KEY_FIELDS, FB_VALUE_FIELDS);
-                        request.setParameters(parameters);
-                        request.executeAsync();
+                        executeGraphRequest(loginResult.getAccessToken());
                     }
 
                     @Override
@@ -109,5 +105,22 @@ public class FacebookAuthProvider implements AuthProvider {
                         mOnSignInResultListener.onSignInError(exception.getMessage());
                     }
                 });
+    }
+
+    private void executeGraphRequest(AccessToken accessToken) {
+        GraphRequest request = GraphRequest.newMeRequest(
+                accessToken,
+                new GraphRequest.GraphJSONObjectCallback() {
+                    @Override
+                    public void onCompleted(JSONObject object, GraphResponse response) {
+                        if (object != null) {
+                            mOnSignInResultListener.onSignInSuccess(getUserFromJSONObject(object));
+                        }
+                    }
+                });
+        Bundle parameters = new Bundle();
+        parameters.putString(FB_KEY_FIELDS, FB_VALUE_FIELDS);
+        request.setParameters(parameters);
+        request.executeAsync();
     }
 }

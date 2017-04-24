@@ -3,7 +3,6 @@ package com.vitaliyhtc.socialnetworksapi.fragment;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 
-import com.vitaliyhtc.socialnetworksapi.auth.AuthProvider;
 import com.vitaliyhtc.socialnetworksapi.model.User;
 
 public class RetainedFragment extends Fragment {
@@ -13,7 +12,6 @@ public class RetainedFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // retain this fragment
         setRetainInstance(true);
     }
 
