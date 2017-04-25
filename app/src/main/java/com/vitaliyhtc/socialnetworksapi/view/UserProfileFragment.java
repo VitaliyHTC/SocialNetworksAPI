@@ -31,6 +31,7 @@ public class UserProfileFragment extends Fragment
     ImageView mUserImageView;
     private AuthProcess mAuthProcess;
     private User mUser;
+    private boolean isFragmentStarted;
 
     @Nullable
     @Override
@@ -44,9 +45,18 @@ public class UserProfileFragment extends Fragment
     public void onStart() {
         super.onStart();
 
+        isFragmentStarted = true;
+
         if (mUser != null) {
             updateDataOnUi();
         }
+    }
+
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        isFragmentStarted = false;
     }
 
     @Override
@@ -57,6 +67,9 @@ public class UserProfileFragment extends Fragment
     @Override
     public void setUser(User user) {
         mUser = user;
+        if (isFragmentStarted) {
+            updateDataOnUi();
+        }
     }
 
     private void updateDataOnUi() {

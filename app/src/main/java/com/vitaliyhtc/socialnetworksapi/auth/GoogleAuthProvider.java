@@ -17,6 +17,9 @@ import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
 import com.vitaliyhtc.socialnetworksapi.model.User;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class GoogleAuthProvider implements AuthProvider {
 
     private static final String TAG = "GoogleAuthProvider";
@@ -29,9 +32,11 @@ public class GoogleAuthProvider implements AuthProvider {
 
     private OnSignInResultListener mOnSignInResultListener;
 
+    private List<OnUserSignInSuccessfulListener> mOnUserSignInSuccessfulListeners;
 
     public GoogleAuthProvider(Context context) {
         mContext = context;
+        mOnUserSignInSuccessfulListeners = new ArrayList<>();
     }
 
     @Override
@@ -80,6 +85,10 @@ public class GoogleAuthProvider implements AuthProvider {
                 });
     }
 
+    @Override
+    public void addOnUserSignInSuccessfulListener(OnUserSignInSuccessfulListener listener) {
+        mOnUserSignInSuccessfulListeners.add(listener);
+    }
 
     private void initGoogle() {
         GoogleSignInOptions gso = new GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
@@ -106,6 +115,9 @@ public class GoogleAuthProvider implements AuthProvider {
             User user = new User(acct.getId(), acct.getDisplayName(), acct.getEmail(), acct.getPhotoUrl().toString());
 
             mOnSignInResultListener.onSignInSuccess(user);
+            for (OnUserSignInSuccessfulListener listener : mOnUserSignInSuccessfulListeners) {
+                listener.onUserSignInSuccess(user);
+            }
         } else {
             mOnSignInResultListener.onSignInError("SignIn failed!");
         }

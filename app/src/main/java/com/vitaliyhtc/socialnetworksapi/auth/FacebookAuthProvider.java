@@ -19,7 +19,9 @@ import com.vitaliyhtc.socialnetworksapi.model.User;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class FacebookAuthProvider implements AuthProvider {
 
@@ -33,8 +35,11 @@ public class FacebookAuthProvider implements AuthProvider {
 
     private OnSignInResultListener mOnSignInResultListener;
 
+    private List<OnUserSignInSuccessfulListener> mOnUserSignInSuccessfulListeners;
+
     public FacebookAuthProvider(Context context) {
         mContext = context;
+        mOnUserSignInSuccessfulListeners = new ArrayList<>();
     }
 
     private static User getUserFromJSONObject(JSONObject object) {
@@ -84,6 +89,11 @@ public class FacebookAuthProvider implements AuthProvider {
         onLogOutResultListener.onLogOut();
     }
 
+    @Override
+    public void addOnUserSignInSuccessfulListener(OnUserSignInSuccessfulListener listener) {
+        mOnUserSignInSuccessfulListeners.add(listener);
+    }
+
     private void initFacebook() {
         mCallbackManager = CallbackManager.Factory.create();
 
@@ -114,7 +124,11 @@ public class FacebookAuthProvider implements AuthProvider {
                     @Override
                     public void onCompleted(JSONObject object, GraphResponse response) {
                         if (object != null) {
-                            mOnSignInResultListener.onSignInSuccess(getUserFromJSONObject(object));
+                            User user = getUserFromJSONObject(object);
+                            mOnSignInResultListener.onSignInSuccess(user);
+                            for (OnUserSignInSuccessfulListener listener : mOnUserSignInSuccessfulListeners) {
+                                listener.onUserSignInSuccess(user);
+                            }
                         }
                     }
                 });

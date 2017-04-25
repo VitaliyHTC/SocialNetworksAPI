@@ -9,4 +9,5 @@ public interface AuthProvider {
     void signIn(OnSignInResultListener onSignInResultListener);
     boolean trySilentSignIn(OnSignInResultListener onSignInResultListener);
     void logOut(OnLogOutResultListener onLogOutResultListener);
+    void addOnUserSignInSuccessfulListener(OnUserSignInSuccessfulListener listener);
 }
