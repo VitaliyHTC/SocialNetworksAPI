@@ -9,6 +9,7 @@ import android.support.v7.app.AppCompatActivity;
 import com.vitaliyhtc.socialnetworksapi.fragment.RetainedFragment;
 import com.vitaliyhtc.socialnetworksapi.model.User;
 
+// TODO: 26/04/17 why do you need this?
 public class AuthManagerImpl
         implements AuthManager,
         OnUserSignInSuccessfulListener {

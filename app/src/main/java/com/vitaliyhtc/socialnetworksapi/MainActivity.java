@@ -50,6 +50,8 @@ public class MainActivity extends AppCompatActivity
 
         initFragments();
 
+
+        // TODO: 26/04/17 save user login status
         if (!isUserSignedIn) {
             mMainPresenter.trySilentSignIn();
         }
@@ -147,6 +149,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void showUserProfileFragment(User user) {
+        // TODO: 26/04/17 unappropriated fragment initialization
+        // TODO: 26/04/17 read about fragment-fragment & fragment-activity connection
+        // TODO: 26/04/17 read confluence!!!
         Fragment fragment = new UserProfileFragment();
         ((UserProfileFragment) fragment).setAuthProcess(MainActivity.this);
         ((UserProfileFragment) fragment).setUser(user);

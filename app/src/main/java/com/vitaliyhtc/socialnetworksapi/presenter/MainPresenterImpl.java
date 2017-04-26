@@ -9,6 +9,7 @@ import com.vitaliyhtc.socialnetworksapi.model.ContextWrap;
 import com.vitaliyhtc.socialnetworksapi.model.IntentWrap;
 import com.vitaliyhtc.socialnetworksapi.model.User;
 
+// TODO: 26/04/17 did you read about MVP on confluence?
 public class MainPresenterImpl implements MainPresenter {
 
     private AuthManager mAuthManager;
