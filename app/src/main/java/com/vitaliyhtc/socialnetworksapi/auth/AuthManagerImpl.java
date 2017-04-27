@@ -2,76 +2,27 @@ package com.vitaliyhtc.socialnetworksapi.auth;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Bundle;
-import android.support.v4.app.FragmentManager;
-import android.support.v7.app.AppCompatActivity;
 
-import com.vitaliyhtc.socialnetworksapi.fragment.RetainedFragment;
-import com.vitaliyhtc.socialnetworksapi.model.User;
+import com.vitaliyhtc.socialnetworksapi.Constants;
+import com.vitaliyhtc.socialnetworksapi.R;
 
-// TODO: 26/04/17 why do you need this?
-public class AuthManagerImpl
-        implements AuthManager,
-        OnUserSignInSuccessfulListener {
-
-    public static final int AUTH_BY_GOOGLE = 0x00F1;
-    public static final int AUTH_BY_FACEBOOK = 0x00F2;
-    private static final int AUTH_BY_NOT_SELECTED = 0x0000;
-
-    private static final String KEY_AUTH_PROVIDER = "authProvider";
-
-    private static final String TAG_RETAINED_FRAGMENT = "RetainedFragment";
+public class AuthManagerImpl implements AuthManager {
 
     private Context mContext;
 
-    private int mCurrentAuthProvider;
-
-    private AuthProvider mGoogleAuthProvider;
-    private AuthProvider mFacebookAuthProvider;
-
-    private AuthProvider mAuthProvider;
-
-    private FragmentManager mFragmentManager;
-    private RetainedFragment mRetainedFragment;
-
+    private GoogleAuthProvider mGoogleAuthProvider;
+    private FacebookAuthProvider mFacebookAuthProvider;
 
     public AuthManagerImpl(Context context) {
         mContext = context;
         mGoogleAuthProvider = new GoogleAuthProvider(context);
         mFacebookAuthProvider = new FacebookAuthProvider(context);
-        mFragmentManager = ((AppCompatActivity) context).getSupportFragmentManager();
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        mGoogleAuthProvider.addOnUserSignInSuccessfulListener(AuthManagerImpl.this);
+    public void onCreate() {
         mGoogleAuthProvider.onCreate();
-        mFacebookAuthProvider.addOnUserSignInSuccessfulListener(AuthManagerImpl.this);
         mFacebookAuthProvider.onCreate();
-
-        if (savedInstanceState != null) {
-            mCurrentAuthProvider = savedInstanceState.getInt(KEY_AUTH_PROVIDER, AUTH_BY_NOT_SELECTED);
-            if (mCurrentAuthProvider == AUTH_BY_GOOGLE) {
-                mAuthProvider = mGoogleAuthProvider;
-            }
-            if (mCurrentAuthProvider == AUTH_BY_FACEBOOK) {
-                mAuthProvider = mFacebookAuthProvider;
-            }
-        }
-
-        initRetainedFragment();
-    }
-
-    @Override
-    public void onPause() {
-        if (((AppCompatActivity) mContext).isFinishing()) {
-            mFragmentManager.beginTransaction().remove(mRetainedFragment).commit();
-        }
-    }
-
-    @Override
-    public void onSaveInstanceState(Bundle outState) {
-        outState.putInt(KEY_AUTH_PROVIDER, mCurrentAuthProvider);
     }
 
     @Override
@@ -81,56 +32,23 @@ public class AuthManagerImpl
     }
 
     @Override
-    public void signInWith(int authProvider, OnSignInResultListener onSignInResultListener) {
-        if (authProvider == AUTH_BY_GOOGLE) {
-            mAuthProvider = mGoogleAuthProvider;
-            mCurrentAuthProvider = AUTH_BY_GOOGLE;
-        } else if (authProvider == AUTH_BY_FACEBOOK) {
-            mAuthProvider = mFacebookAuthProvider;
-            mCurrentAuthProvider = AUTH_BY_FACEBOOK;
-        }
-        if (mAuthProvider != null) {
-            mAuthProvider.signIn(onSignInResultListener);
+    public void signInWith(OnSignInResultListener onSignInResultListener, int providerId) {
+        if (providerId == Constants.AUTH_BY_GOOGLE) {
+            mGoogleAuthProvider.signIn(onSignInResultListener);
+        } else if (providerId == Constants.AUTH_BY_FACEBOOK) {
+            mFacebookAuthProvider.signIn(onSignInResultListener);
         } else {
-            throw new IllegalArgumentException("No AuthProvider found for given id.");
+            throw new IllegalArgumentException(mContext.getString(R.string.auth_error_no_auth_provider_found_by_id));
         }
     }
 
     @Override
-    public void trySilentSignIn(OnSignInResultListener onSignInResultListener) {
+    public int trySilentSignIn(OnSignInResultListener onSignInResultListener) {
         if (mGoogleAuthProvider.trySilentSignIn(onSignInResultListener)) {
-            mAuthProvider = mGoogleAuthProvider;
+            return Constants.AUTH_BY_GOOGLE;
         } else if (mFacebookAuthProvider.trySilentSignIn(onSignInResultListener)) {
-            mAuthProvider = mFacebookAuthProvider;
+            return Constants.AUTH_BY_FACEBOOK;
         }
+        return Constants.AUTH_BY_NOT_SELECTED;
     }
-
-    @Override
-    public void logOut(OnLogOutResultListener onLogOutResultListener) {
-        if (mAuthProvider != null) {
-            mAuthProvider.logOut(onLogOutResultListener);
-            mCurrentAuthProvider = AUTH_BY_NOT_SELECTED;
-            mAuthProvider = null;
-            mRetainedFragment.setUser(null);
-        }
-    }
-
-    @Override
-    public void onUserSignInSuccess(User user) {
-        mRetainedFragment.setUser(user);
-    }
-
-    @Override
-    public User getRetainedUser() {
-        return mRetainedFragment.getUser();
-    }
-
-    private void initRetainedFragment() {
-        mRetainedFragment = (RetainedFragment) mFragmentManager.findFragmentByTag(TAG_RETAINED_FRAGMENT);
-        if (mRetainedFragment == null) {
-            mRetainedFragment = new RetainedFragment();
-            mFragmentManager.beginTransaction().add(mRetainedFragment, TAG_RETAINED_FRAGMENT).commit();
-        }
-    }
-
 }

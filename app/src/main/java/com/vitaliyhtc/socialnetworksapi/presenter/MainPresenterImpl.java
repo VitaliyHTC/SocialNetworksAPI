@@ -1,7 +1,7 @@
 package com.vitaliyhtc.socialnetworksapi.presenter;
 
 import com.vitaliyhtc.socialnetworksapi.auth.AuthManager;
-import com.vitaliyhtc.socialnetworksapi.auth.AuthManagerImpl;
+import com.vitaliyhtc.socialnetworksapi.auth.AuthManagerImpl111;
 import com.vitaliyhtc.socialnetworksapi.auth.OnLogOutResultListener;
 import com.vitaliyhtc.socialnetworksapi.auth.OnSignInResultListener;
 import com.vitaliyhtc.socialnetworksapi.model.BundleWrap;
@@ -19,7 +19,7 @@ public class MainPresenterImpl implements MainPresenter {
     private OnLogOutResultListener mOnLogOutResultListener;
 
     public MainPresenterImpl(ContextWrap context, MainPresenterCallbacks mainPresenterCallbacks) {
-        mAuthManager = new AuthManagerImpl(context.getContext());
+        mAuthManager = new AuthManagerImpl111(context.getContext());
         mMainPresenterCallbacks = mainPresenterCallbacks;
     }
 
@@ -47,12 +47,12 @@ public class MainPresenterImpl implements MainPresenter {
 
     @Override
     public void onGoogleSignInButtonClick() {
-        mAuthManager.signInWith(AuthManagerImpl.AUTH_BY_GOOGLE, mOnSignInResultListener);
+        mAuthManager.signInWith(AuthManagerImpl111.AUTH_BY_GOOGLE, mOnSignInResultListener);
     }
 
     @Override
     public void onFacebookSignInButtonClick() {
-        mAuthManager.signInWith(AuthManagerImpl.AUTH_BY_FACEBOOK, mOnSignInResultListener);
+        mAuthManager.signInWith(AuthManagerImpl111.AUTH_BY_FACEBOOK, mOnSignInResultListener);
     }
 
     @Override
