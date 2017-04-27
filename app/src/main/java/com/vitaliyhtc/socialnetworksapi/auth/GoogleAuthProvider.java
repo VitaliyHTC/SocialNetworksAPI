@@ -2,7 +2,8 @@ package com.vitaliyhtc.socialnetworksapi.auth;
 
 import android.content.Context;
 import android.content.Intent;
-import android.support.v7.app.AppCompatActivity;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
 import com.google.android.gms.auth.api.Auth;
@@ -15,15 +16,19 @@ public class GoogleAuthProvider extends GoogleAuthProviderBase
 
     private OnSignInResultListener mOnSignInResultListener;
 
-    public GoogleAuthProvider(Context context) {
-        super(context);
+    //private Fragment mFragment;
+
+    public GoogleAuthProvider(Context context, Fragment fragment) {
+        super(context, fragment);
+        //mFragment = fragment;
     }
 
     @Override
     public void signIn(OnSignInResultListener onSignInResultListener) {
+        Log.e(TAG, "signIn: ");
         mOnSignInResultListener = onSignInResultListener;
         Intent signInIntent = Auth.GoogleSignInApi.getSignInIntent(mGoogleApiClient);
-        ((AppCompatActivity) mContext).startActivityForResult(signInIntent, RC_SIGN_IN);
+        mFragment.startActivityForResult(signInIntent, RC_SIGN_IN);
     }
 
     @Override
@@ -43,6 +48,7 @@ public class GoogleAuthProvider extends GoogleAuthProviderBase
 
     public void handleSignInResult(GoogleSignInResult result) {
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
+        Log.e(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
             mOnSignInResultListener.onSignInSuccess();
         } else {

@@ -1,14 +1,21 @@
 package com.vitaliyhtc.socialnetworksapi.view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
+import com.vitaliyhtc.socialnetworksapi.Constants;
 import com.vitaliyhtc.socialnetworksapi.R;
-import com.vitaliyhtc.socialnetworksapi.interfaces.AuthProcess;
+import com.vitaliyhtc.socialnetworksapi.model.ContextWrap;
+import com.vitaliyhtc.socialnetworksapi.model.FragmentWrap;
+import com.vitaliyhtc.socialnetworksapi.model.IntentWrap;
+import com.vitaliyhtc.socialnetworksapi.presenter.LoginPresenter;
+import com.vitaliyhtc.socialnetworksapi.presenter.LoginPresenterImpl;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -16,8 +23,8 @@ import butterknife.OnClick;
 public class LoginFragment extends Fragment
         implements LoginView {
 
-    private AuthProcess mAuthProcess;
-
+    private FragmentCallbacks mFragmentCallbacks;
+    private LoginPresenter mLoginPresenter;
 
     @Nullable
     @Override
@@ -28,29 +35,47 @@ public class LoginFragment extends Fragment
     }
 
     @Override
-    public void setAuthProcess(AuthProcess authProcess) {
-        mAuthProcess = authProcess;
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mLoginPresenter = new LoginPresenterImpl(new ContextWrap(getContext()), new FragmentWrap(LoginFragment.this));
+        mLoginPresenter.onAttachView(LoginFragment.this);
+        mLoginPresenter.onCreate();
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onStop() {
+        super.onStop();
+        mLoginPresenter.onDetachView();
     }
 
     @Override
-    public void onDestroy() {
-        super.onDestroy();
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mLoginPresenter.onActivityResult(requestCode, resultCode, new IntentWrap(data));
+    }
+
+    @Override
+    public void setFragmentCallbacks(FragmentCallbacks fragmentCallbacks) {
+        mFragmentCallbacks = fragmentCallbacks;
+    }
+
+    @Override
+    public void onSignInSuccess(int providerId) {
+        mFragmentCallbacks.onUserSignedIn(providerId);
+    }
+
+    @Override
+    public void onSignInError(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
     }
 
     @OnClick(R.id.sign_in_button)
     protected void onGoogleSignInButtonClick() {
-        mAuthProcess.onGoogleSignInButtonClick();
-
+        mLoginPresenter.onSignInButtonClick(Constants.AUTH_BY_GOOGLE);
     }
 
     @OnClick(R.id.login_button)
     protected void onFacebookSignInButtonClick() {
-        mAuthProcess.onFacebookSignInButtonClick();
+        mLoginPresenter.onSignInButtonClick(Constants.AUTH_BY_FACEBOOK);
     }
-
 }

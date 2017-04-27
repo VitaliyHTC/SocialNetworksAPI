@@ -1,68 +1,37 @@
 package com.vitaliyhtc.socialnetworksapi;
 
-import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
-import android.widget.Toast;
 
-import com.vitaliyhtc.socialnetworksapi.interfaces.AuthProcess;
-import com.vitaliyhtc.socialnetworksapi.model.BundleWrap;
-import com.vitaliyhtc.socialnetworksapi.model.ContextWrap;
-import com.vitaliyhtc.socialnetworksapi.model.IntentWrap;
-import com.vitaliyhtc.socialnetworksapi.model.User;
-import com.vitaliyhtc.socialnetworksapi.presenter.MainPresenter;
-import com.vitaliyhtc.socialnetworksapi.presenter.MainPresenterCallbacks;
-import com.vitaliyhtc.socialnetworksapi.presenter.MainPresenterImpl;
-import com.vitaliyhtc.socialnetworksapi.view.BaseView;
 import com.vitaliyhtc.socialnetworksapi.view.LoginFragment;
+import com.vitaliyhtc.socialnetworksapi.view.FragmentCallbacks;
 import com.vitaliyhtc.socialnetworksapi.view.UserProfileFragment;
 
 public class MainActivity extends AppCompatActivity
-        implements AuthProcess, MainPresenterCallbacks {
+        implements FragmentCallbacks {
 
     private static final String KEY_DISPLAYED_FRAGMENT_ID = "displayedFragmentId";
     private static final int VALUE_FRAGMENT_LOGIN = 0x01;
     private static final int VALUE_FRAGMENT_USER_PROFILE = 0x02;
 
     private static final String KEY_IS_USER_SIGNED_IN = "isUserSignedIn";
+    private static final String KEY_CURRENT_AUTH_PROVIDER_ID = "currentAuthProviderId";
 
-
-    private MainPresenter mMainPresenter;
-
-    private FragmentManager mFragmentManager;
     private int mLastDisplayedFragment;
-
     private boolean isUserSignedIn;
+    private int mCurrentAuthProviderId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        mFragmentManager = getSupportFragmentManager();
-
-        mMainPresenter = new MainPresenterImpl(new ContextWrap(MainActivity.this), MainActivity.this);
-        mMainPresenter.onCreate(new BundleWrap(savedInstanceState));
-
         restoreFromSavedInstanceState(savedInstanceState);
 
         initFragments();
-
-
-        // TODO: 26/04/17 save user login status
-        if (!isUserSignedIn) {
-            mMainPresenter.trySilentSignIn();
-        }
     }
 
-    @Override
-    protected void onPause() {
-        super.onPause();
-
-        mMainPresenter.onPause();
-    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -70,91 +39,72 @@ public class MainActivity extends AppCompatActivity
 
         outState.putInt(KEY_DISPLAYED_FRAGMENT_ID, mLastDisplayedFragment);
         outState.putBoolean(KEY_IS_USER_SIGNED_IN, isUserSignedIn);
-        mMainPresenter.onSaveInstanceState(new BundleWrap(outState));
+        outState.putInt(KEY_CURRENT_AUTH_PROVIDER_ID, mCurrentAuthProviderId);
     }
 
     @Override
-    public void onGoogleSignInButtonClick() {
-        mMainPresenter.onGoogleSignInButtonClick();
-    }
-
-    @Override
-    public void onFacebookSignInButtonClick() {
-        mMainPresenter.onFacebookSignInButtonClick();
-    }
-
-    @Override
-    public void onLogOut() {
-        mMainPresenter.onLogOut();
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        mMainPresenter.onActivityResult(requestCode, resultCode, new IntentWrap(data));
-    }
-
-    @Override
-    public void onUserSignedIn(User user) {
-        isUserSignedIn = true;
-
-        mLastDisplayedFragment = VALUE_FRAGMENT_USER_PROFILE;
-        showUserProfileFragment(user);
-    }
-
-    @Override
-    public void onSignInError(String message) {
-        Toast.makeText(MainActivity.this, message, Toast.LENGTH_LONG).show();
+    public void onUserSignedIn(int providerId) {
+        if (Constants.isProviderPresentById(providerId)) {
+            mCurrentAuthProviderId = providerId;
+            isUserSignedIn = true;
+            showUserProfileFragment(providerId);
+        } else {
+            mCurrentAuthProviderId = Constants.AUTH_BY_NOT_SELECTED;
+            isUserSignedIn = false;
+            showLoginFragment();
+        }
     }
 
     @Override
     public void onUserLoggedOut() {
-        mLastDisplayedFragment = VALUE_FRAGMENT_LOGIN;
-        Fragment fragment = new LoginFragment();
-        ((LoginFragment) fragment).setAuthProcess(MainActivity.this);
-        replaceFragment(fragment);
+        isUserSignedIn = false;
+        mCurrentAuthProviderId = Constants.AUTH_BY_NOT_SELECTED;
+        showLoginFragment();
     }
 
     private void restoreFromSavedInstanceState(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
             mLastDisplayedFragment = savedInstanceState.getInt(KEY_DISPLAYED_FRAGMENT_ID, VALUE_FRAGMENT_LOGIN);
             isUserSignedIn = savedInstanceState.getBoolean(KEY_IS_USER_SIGNED_IN, false);
+            mCurrentAuthProviderId = savedInstanceState.getInt(KEY_CURRENT_AUTH_PROVIDER_ID, Constants.AUTH_BY_NOT_SELECTED);
         } else {
-            isUserSignedIn = false;
             mLastDisplayedFragment = VALUE_FRAGMENT_LOGIN;
+            isUserSignedIn = false;
+            mCurrentAuthProviderId = Constants.AUTH_BY_NOT_SELECTED;
         }
     }
 
     private void initFragments() {
-        Fragment fragment;
         if (mLastDisplayedFragment == VALUE_FRAGMENT_LOGIN) {
-            fragment = new LoginFragment();
-            ((BaseView) fragment).setAuthProcess(MainActivity.this);
-            replaceFragment(fragment);
-        } else if (mLastDisplayedFragment == VALUE_FRAGMENT_USER_PROFILE &&
-                mMainPresenter.getRetainedUser() != null) {
-            showUserProfileFragment(mMainPresenter.getRetainedUser());
+            showLoginFragment();
+        } else if (mLastDisplayedFragment == VALUE_FRAGMENT_USER_PROFILE) {
+            showUserProfileFragment(mCurrentAuthProviderId);
         } else {
-            fragment = new LoginFragment();
-            ((BaseView) fragment).setAuthProcess(MainActivity.this);
-            replaceFragment(fragment);
+            showLoginFragment();
         }
     }
 
     private void replaceFragment(Fragment fragment) {
-        mFragmentManager.beginTransaction()
+        getSupportFragmentManager().beginTransaction()
                 .setCustomAnimations(R.anim.come_in_anim, R.anim.go_out_anim)
                 .replace(R.id.container_view, fragment).commit();
     }
 
-    private void showUserProfileFragment(User user) {
-        // TODO: 26/04/17 unappropriated fragment initialization
-        // TODO: 26/04/17 read about fragment-fragment & fragment-activity connection
-        // TODO: 26/04/17 read confluence!!!
-        Fragment fragment = new UserProfileFragment();
-        ((UserProfileFragment) fragment).setAuthProcess(MainActivity.this);
-        ((UserProfileFragment) fragment).setUser(user);
+    private void showUserProfileFragment(int providerId) {
+        if (Constants.isProviderPresentById(providerId)) {
+            mLastDisplayedFragment = VALUE_FRAGMENT_USER_PROFILE;
+            UserProfileFragment fragment = UserProfileFragment.newInstance(providerId);
+            fragment.setFragmentCallbacks(MainActivity.this);
+            replaceFragment(fragment);
+        } else {
+            showLoginFragment();
+        }
+    }
+
+    private void showLoginFragment() {
+        mLastDisplayedFragment = VALUE_FRAGMENT_LOGIN;
+        LoginFragment fragment = new LoginFragment();
+        fragment.setFragmentCallbacks(MainActivity.this);
         replaceFragment(fragment);
     }
 

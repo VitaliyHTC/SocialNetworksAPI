@@ -10,4 +10,8 @@ public abstract class Constants {
     private Constants() {
         throw new AssertionError();
     }
+
+    public static boolean isProviderPresentById(int id) {
+        return id == AUTH_BY_GOOGLE || id == AUTH_BY_FACEBOOK;
+    }
 }

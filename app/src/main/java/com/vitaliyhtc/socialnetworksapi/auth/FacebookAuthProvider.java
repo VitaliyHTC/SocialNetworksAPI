@@ -1,7 +1,7 @@
 package com.vitaliyhtc.socialnetworksapi.auth;
 
-import android.app.Activity;
 import android.content.Context;
+import android.support.v4.app.Fragment;
 
 import com.facebook.AccessToken;
 import com.facebook.FacebookException;
@@ -16,14 +16,17 @@ public class FacebookAuthProvider extends FacebookAuthProviderBase
 
     private OnSignInResultListener mOnSignInResultListener;
 
-    public FacebookAuthProvider(Context context) {
+    private Fragment mFragment;
+
+    public FacebookAuthProvider(Context context, Fragment fragment) {
         super(context);
+        mFragment = fragment;
     }
 
     @Override
     public void signIn(OnSignInResultListener onSignInResultListener) {
         mOnSignInResultListener = onSignInResultListener;
-        LoginManager.getInstance().logInWithReadPermissions((Activity) mContext, Arrays.asList(FB_PERMISSIONS));
+        LoginManager.getInstance().logInWithReadPermissions(mFragment, Arrays.asList(FB_PERMISSIONS));
     }
 
     @Override

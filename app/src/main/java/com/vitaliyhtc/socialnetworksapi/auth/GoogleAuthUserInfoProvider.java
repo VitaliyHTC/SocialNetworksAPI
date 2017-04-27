@@ -1,6 +1,7 @@
 package com.vitaliyhtc.socialnetworksapi.auth;
 
 import android.content.Context;
+import android.support.v4.app.Fragment;
 import android.util.Log;
 
 import com.google.android.gms.auth.api.Auth;
@@ -17,8 +18,8 @@ public class GoogleAuthUserInfoProvider extends GoogleAuthProviderBase
 
     private OnUserInfoListener mOnUserInfoListener;
 
-    public GoogleAuthUserInfoProvider(Context context) {
-        super(context);
+    public GoogleAuthUserInfoProvider(Context context, Fragment fragment) {
+        super(context, fragment);
     }
 
     @Override

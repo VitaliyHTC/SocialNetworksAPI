@@ -1,5 +1,6 @@
 package com.vitaliyhtc.socialnetworksapi.view;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -8,11 +9,16 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 import com.vitaliyhtc.socialnetworksapi.R;
-import com.vitaliyhtc.socialnetworksapi.interfaces.AuthProcess;
+import com.vitaliyhtc.socialnetworksapi.model.ContextWrap;
+import com.vitaliyhtc.socialnetworksapi.model.FragmentWrap;
+import com.vitaliyhtc.socialnetworksapi.model.IntentWrap;
 import com.vitaliyhtc.socialnetworksapi.model.User;
+import com.vitaliyhtc.socialnetworksapi.presenter.UserProfilePresenter;
+import com.vitaliyhtc.socialnetworksapi.presenter.UserProfilePresenterImpl;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -20,6 +26,9 @@ import butterknife.OnClick;
 
 public class UserProfileFragment extends Fragment
         implements UserProfileView {
+
+    public static final String KEY_PROVIDER_ID = "providerId";
+    public static final String KEY_USER = "User";
 
     @BindView(R.id.tv_user_name)
     TextView mUserNameTextView;
@@ -29,9 +38,34 @@ public class UserProfileFragment extends Fragment
     TextView mBirthDateTextView;
     @BindView(R.id.userImageView)
     ImageView mUserImageView;
-    private AuthProcess mAuthProcess;
+
     private User mUser;
-    private boolean isFragmentStarted;
+
+    private int mProviderId;
+
+    private FragmentCallbacks mFragmentCallbacks;
+
+    private UserProfilePresenter mUserProfilePresenter;
+
+
+    public static UserProfileFragment newInstance(int providerId) {
+        UserProfileFragment fragment = new UserProfileFragment();
+        Bundle args = new Bundle();
+        args.putInt(KEY_PROVIDER_ID, providerId);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mProviderId = getArguments().getInt(KEY_PROVIDER_ID);
+        }
+        if (savedInstanceState != null) {
+            mUser = savedInstanceState.getParcelable(KEY_USER);
+        }
+    }
 
     @Nullable
     @Override
@@ -42,46 +76,67 @@ public class UserProfileFragment extends Fragment
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        mUserProfilePresenter = new UserProfilePresenterImpl(new ContextWrap(getContext()), new FragmentWrap(UserProfileFragment.this));
+        mUserProfilePresenter.onAttachView(UserProfileFragment.this);
+        mUserProfilePresenter.onCreate();
+        if (mUser == null) {
+            mUserProfilePresenter.getUserProfile(mProviderId);
+        }
+    }
 
-        isFragmentStarted = true;
-
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
         if (mUser != null) {
-            updateDataOnUi();
+            outState.putParcelable(KEY_USER, mUser);
         }
     }
 
     @Override
     public void onStop() {
         super.onStop();
-
-        isFragmentStarted = false;
+        mUserProfilePresenter.onDetachView();
     }
 
     @Override
-    public void setAuthProcess(AuthProcess authProcess) {
-        mAuthProcess = authProcess;
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        mUserProfilePresenter.onActivityResult(requestCode, resultCode, new IntentWrap(data));
     }
 
     @Override
-    public void setUser(User user) {
+    public void setFragmentCallbacks(FragmentCallbacks fragmentCallbacks) {
+        mFragmentCallbacks = fragmentCallbacks;
+    }
+
+    @Override
+    public void onUserInfoSuccess(User user) {
         mUser = user;
-        if (isFragmentStarted) {
-            updateDataOnUi();
-        }
+        updateDataOnUi();
+    }
+
+    @Override
+    public void onUserInfoError(String message) {
+        Toast.makeText(getContext(), message, Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onLogOut() {
+        mFragmentCallbacks.onUserLoggedOut();
     }
 
     private void updateDataOnUi() {
         mUserNameTextView.setText(mUser.getUserName());
         mEmailTextView.setText(mUser.getUserEmail());
-        mBirthDateTextView.setText(mUser.getAdditionalDataByKey(User.USER_BIRTH_DATE));
+        mBirthDateTextView.setText(mUser.getAdditionalDataByKey(User.KEY_USER_BIRTH_DATE));
         Picasso.with(getContext()).load(mUser.getUserPhotoUrl())
                 .into(mUserImageView);
     }
 
     @OnClick(R.id.btn_logout)
-    void onLogOut() {
-        mAuthProcess.onLogOut();
+    void onLogOutButtonClick() {
+        mUserProfilePresenter.onLogOutButtonClick(mProviderId);
     }
 }

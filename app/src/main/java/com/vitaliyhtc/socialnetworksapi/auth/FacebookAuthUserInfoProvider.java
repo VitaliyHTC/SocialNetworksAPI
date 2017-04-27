@@ -79,7 +79,7 @@ public class FacebookAuthUserInfoProvider extends FacebookAuthProviderBase
             user.setUserName(object.getString("name"));
             user.setUserEmail(object.getString("email"));
             user.setUserPhotoUrl(object.getJSONObject("picture").getJSONObject("data").getString("url"));
-            user.putAdditionalData(User.USER_BIRTH_DATE, object.getString("birthday"));
+            user.putAdditionalData(User.KEY_USER_BIRTH_DATE, object.getString("birthday"));
         } catch (JSONException e) {
             e.printStackTrace();
         }

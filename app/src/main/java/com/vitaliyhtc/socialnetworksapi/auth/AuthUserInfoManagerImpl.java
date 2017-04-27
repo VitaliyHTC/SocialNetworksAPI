@@ -2,6 +2,7 @@ package com.vitaliyhtc.socialnetworksapi.auth;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.app.Fragment;
 
 import com.vitaliyhtc.socialnetworksapi.Constants;
 import com.vitaliyhtc.socialnetworksapi.R;
@@ -13,9 +14,9 @@ public class AuthUserInfoManagerImpl implements AuthUserInfoManager {
     private GoogleAuthUserInfoProvider mGoogleAuthUserInfoProvider;
     private FacebookAuthUserInfoProvider mFacebookAuthUserInfoProvider;
 
-    public AuthUserInfoManagerImpl(Context context) {
+    public AuthUserInfoManagerImpl(Context context, Fragment fragment) {
         mContext = context;
-        mGoogleAuthUserInfoProvider = new GoogleAuthUserInfoProvider(context);
+        mGoogleAuthUserInfoProvider = new GoogleAuthUserInfoProvider(context, fragment);
         mFacebookAuthUserInfoProvider = new FacebookAuthUserInfoProvider(context);
     }
 

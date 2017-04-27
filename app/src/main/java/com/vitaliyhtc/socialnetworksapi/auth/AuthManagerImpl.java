@@ -2,21 +2,25 @@ package com.vitaliyhtc.socialnetworksapi.auth;
 
 import android.content.Context;
 import android.content.Intent;
+import android.support.v4.app.Fragment;
+import android.util.Log;
 
 import com.vitaliyhtc.socialnetworksapi.Constants;
 import com.vitaliyhtc.socialnetworksapi.R;
 
 public class AuthManagerImpl implements AuthManager {
 
+    private static final String TAG = "AuthManagerImpl";
+
     private Context mContext;
 
     private GoogleAuthProvider mGoogleAuthProvider;
     private FacebookAuthProvider mFacebookAuthProvider;
 
-    public AuthManagerImpl(Context context) {
+    public AuthManagerImpl(Context context, Fragment fragment) {
         mContext = context;
-        mGoogleAuthProvider = new GoogleAuthProvider(context);
-        mFacebookAuthProvider = new FacebookAuthProvider(context);
+        mGoogleAuthProvider = new GoogleAuthProvider(context, fragment);
+        mFacebookAuthProvider = new FacebookAuthProvider(context, fragment);
     }
 
     @Override
@@ -33,6 +37,7 @@ public class AuthManagerImpl implements AuthManager {
 
     @Override
     public void signInWith(OnSignInResultListener onSignInResultListener, int providerId) {
+        Log.e(TAG, "signInWith: " + providerId);
         if (providerId == Constants.AUTH_BY_GOOGLE) {
             mGoogleAuthProvider.signIn(onSignInResultListener);
         } else if (providerId == Constants.AUTH_BY_FACEBOOK) {
