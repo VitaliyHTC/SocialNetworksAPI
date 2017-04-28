@@ -3,12 +3,12 @@ package com.vitaliyhtc.socialnetworksapi.auth;
 import android.content.Context;
 import android.content.Intent;
 import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
 import android.util.Log;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
 import com.google.android.gms.common.api.OptionalPendingResult;
+import com.vitaliyhtc.socialnetworksapi.Constants;
 import com.vitaliyhtc.socialnetworksapi.R;
 
 public class GoogleAuthProvider extends GoogleAuthProviderBase
@@ -50,7 +50,7 @@ public class GoogleAuthProvider extends GoogleAuthProviderBase
         Log.d(TAG, "handleSignInResult:" + result.isSuccess());
         Log.e(TAG, "handleSignInResult:" + result.isSuccess());
         if (result.isSuccess()) {
-            mOnSignInResultListener.onSignInSuccess();
+            mOnSignInResultListener.onSignInSuccess(Constants.AUTH_BY_GOOGLE);
         } else {
             mOnSignInResultListener.onSignInError(mContext.getString(R.string.google_error_signin_failed));
         }

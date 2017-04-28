@@ -83,15 +83,15 @@ public class UserProfileFragment extends Fragment
         mUserProfilePresenter.onCreate();
         if (mUser == null) {
             mUserProfilePresenter.getUserProfile(mProviderId);
+        } else if (mUser.getUserName().isEmpty()) {
+            mUserProfilePresenter.getUserProfile(mProviderId);
         }
     }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mUser != null) {
-            outState.putParcelable(KEY_USER, mUser);
-        }
+        outState.putParcelable(KEY_USER, mUser);
     }
 
     @Override
@@ -124,6 +124,7 @@ public class UserProfileFragment extends Fragment
 
     @Override
     public void onLogOut() {
+        mUser = null;
         mFragmentCallbacks.onUserLoggedOut();
     }
 

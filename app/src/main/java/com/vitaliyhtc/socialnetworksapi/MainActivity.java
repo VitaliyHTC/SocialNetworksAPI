@@ -4,8 +4,8 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.app.AppCompatActivity;
 
-import com.vitaliyhtc.socialnetworksapi.view.LoginFragment;
 import com.vitaliyhtc.socialnetworksapi.view.FragmentCallbacks;
+import com.vitaliyhtc.socialnetworksapi.view.LoginFragment;
 import com.vitaliyhtc.socialnetworksapi.view.UserProfileFragment;
 
 public class MainActivity extends AppCompatActivity
@@ -21,6 +21,8 @@ public class MainActivity extends AppCompatActivity
     private int mLastDisplayedFragment;
     private boolean isUserSignedIn;
     private int mCurrentAuthProviderId;
+
+    private boolean mAppHasJustStarted;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,10 +69,12 @@ public class MainActivity extends AppCompatActivity
             mLastDisplayedFragment = savedInstanceState.getInt(KEY_DISPLAYED_FRAGMENT_ID, VALUE_FRAGMENT_LOGIN);
             isUserSignedIn = savedInstanceState.getBoolean(KEY_IS_USER_SIGNED_IN, false);
             mCurrentAuthProviderId = savedInstanceState.getInt(KEY_CURRENT_AUTH_PROVIDER_ID, Constants.AUTH_BY_NOT_SELECTED);
+            mAppHasJustStarted = false;
         } else {
             mLastDisplayedFragment = VALUE_FRAGMENT_LOGIN;
             isUserSignedIn = false;
             mCurrentAuthProviderId = Constants.AUTH_BY_NOT_SELECTED;
+            mAppHasJustStarted = true;
         }
     }
 
@@ -103,7 +107,7 @@ public class MainActivity extends AppCompatActivity
 
     private void showLoginFragment() {
         mLastDisplayedFragment = VALUE_FRAGMENT_LOGIN;
-        LoginFragment fragment = new LoginFragment();
+        LoginFragment fragment = LoginFragment.newInstance(mAppHasJustStarted);
         fragment.setFragmentCallbacks(MainActivity.this);
         replaceFragment(fragment);
     }

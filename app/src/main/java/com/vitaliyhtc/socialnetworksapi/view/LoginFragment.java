@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -22,9 +23,28 @@ import butterknife.OnClick;
 
 public class LoginFragment extends Fragment
         implements LoginView {
-
+    public static final String KEY_APP_JUST_STARTED = "appHasJustStarted";
+    private static final String TAG = "LoginFragment";
     private FragmentCallbacks mFragmentCallbacks;
     private LoginPresenter mLoginPresenter;
+
+    private boolean mAppHasJustStarted;
+
+    public static LoginFragment newInstance(boolean appHasJustStarted) {
+        LoginFragment fragment = new LoginFragment();
+        Bundle args = new Bundle();
+        args.putBoolean(KEY_APP_JUST_STARTED, appHasJustStarted);
+        fragment.setArguments(args);
+        return fragment;
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mAppHasJustStarted = getArguments().getBoolean(KEY_APP_JUST_STARTED);
+        }
+    }
 
     @Nullable
     @Override
@@ -40,11 +60,15 @@ public class LoginFragment extends Fragment
         mLoginPresenter = new LoginPresenterImpl(new ContextWrap(getContext()), new FragmentWrap(LoginFragment.this));
         mLoginPresenter.onAttachView(LoginFragment.this);
         mLoginPresenter.onCreate();
+        if (mAppHasJustStarted) {
+            mAppHasJustStarted = false;
+            mLoginPresenter.trySilentSignIn();
+        }
     }
 
     @Override
-    public void onStop() {
-        super.onStop();
+    public void onDestroyView() {
+        super.onDestroyView();
         mLoginPresenter.onDetachView();
     }
 
@@ -61,6 +85,7 @@ public class LoginFragment extends Fragment
 
     @Override
     public void onSignInSuccess(int providerId) {
+        Log.e(TAG, "onSignInSuccess: " + providerId);
         mFragmentCallbacks.onUserSignedIn(providerId);
     }
 

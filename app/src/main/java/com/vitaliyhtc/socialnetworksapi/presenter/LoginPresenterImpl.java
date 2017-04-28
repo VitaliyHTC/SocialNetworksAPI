@@ -23,8 +23,6 @@ public class LoginPresenterImpl implements LoginPresenter {
 
     private OnSignInResultListener mOnSignInResultListener;
 
-    private int mProviderId;
-
     public LoginPresenterImpl(ContextWrap context, FragmentWrap fragmentWrap) {
         mContext = context;
         mFragmentWrap = fragmentWrap;
@@ -45,13 +43,16 @@ public class LoginPresenterImpl implements LoginPresenter {
     @Override
     public void onCreate() {
         mAuthManager.onCreate();
-        mAuthManager.trySilentSignIn(mOnSignInResultListener);
     }
 
     @Override
     public void onSignInButtonClick(final int providerId) {
-        mProviderId = providerId;
         mAuthManager.signInWith(mOnSignInResultListener, providerId);
+    }
+
+    @Override
+    public void trySilentSignIn() {
+        mAuthManager.trySilentSignIn(mOnSignInResultListener);
     }
 
     @Override
@@ -62,12 +63,12 @@ public class LoginPresenterImpl implements LoginPresenter {
     private void initListeners() {
         mOnSignInResultListener = new OnSignInResultListener() {
             @Override
-            public void onSignInSuccess() {
+            public void onSignInSuccess(int providerId) {
                 Log.e(TAG, "onSignInSuccess: ");
                 if (mLoginView != null) {
-                    mLoginView.onSignInSuccess(mProviderId);
-                }else {
-                    Log.e(TAG, "onSignInSuccess: null!!!");
+                    mLoginView.onSignInSuccess(providerId);
+                } else {
+                    Log.e(TAG, "onSignInSuccess: mLoginView is null!!!");
                 }
             }
 

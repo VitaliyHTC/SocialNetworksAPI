@@ -7,6 +7,7 @@ import com.facebook.AccessToken;
 import com.facebook.FacebookException;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
+import com.vitaliyhtc.socialnetworksapi.Constants;
 import com.vitaliyhtc.socialnetworksapi.R;
 
 import java.util.Arrays;
@@ -34,7 +35,7 @@ public class FacebookAuthProvider extends FacebookAuthProviderBase
         mOnSignInResultListener = onSignInResultListener;
 
         if (AccessToken.getCurrentAccessToken() != null) {
-            mOnSignInResultListener.onSignInSuccess();
+            mOnSignInResultListener.onSignInSuccess(Constants.AUTH_BY_FACEBOOK);
             return true;
         }
         return false;
@@ -42,7 +43,7 @@ public class FacebookAuthProvider extends FacebookAuthProviderBase
 
     @Override
     public void onSuccessCall(LoginResult loginResult) {
-        mOnSignInResultListener.onSignInSuccess();
+        mOnSignInResultListener.onSignInSuccess(Constants.AUTH_BY_FACEBOOK);
     }
 
     @Override

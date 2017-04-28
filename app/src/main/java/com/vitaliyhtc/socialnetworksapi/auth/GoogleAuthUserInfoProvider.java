@@ -1,12 +1,15 @@
 package com.vitaliyhtc.socialnetworksapi.auth;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.util.Log;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
 import com.google.android.gms.auth.api.signin.GoogleSignInResult;
+import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.OptionalPendingResult;
 import com.google.android.gms.common.api.ResultCallback;
 import com.google.android.gms.common.api.Status;
@@ -17,6 +20,7 @@ public class GoogleAuthUserInfoProvider extends GoogleAuthProviderBase
         implements AuthUserInfoProvider {
 
     private OnUserInfoListener mOnUserInfoListener;
+    private OnLogOutResultListener mOnLogOutResultListener;
 
     public GoogleAuthUserInfoProvider(Context context, Fragment fragment) {
         super(context, fragment);
@@ -36,13 +40,23 @@ public class GoogleAuthUserInfoProvider extends GoogleAuthProviderBase
 
     @Override
     public void logOut(final OnLogOutResultListener onLogOutResultListener) {
-        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
-                new ResultCallback<Status>() {
-                    @Override
-                    public void onResult(Status status) {
-                        onLogOutResultListener.onLogOut();
-                    }
-                });
+        mOnLogOutResultListener = onLogOutResultListener;
+        if (!mGoogleApiClient.isConnected()) {
+            mGoogleApiClient.connect();
+            mGoogleApiClient.registerConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
+                @Override
+                public void onConnected(@Nullable Bundle bundle) {
+                    signOut();
+                }
+
+                @Override
+                public void onConnectionSuspended(int i) {
+                    Log.d(TAG, "Google API Client Connection Suspended");
+                }
+            });
+        } else {
+            signOut();
+        }
     }
 
     @Override
@@ -55,5 +69,15 @@ public class GoogleAuthUserInfoProvider extends GoogleAuthProviderBase
         } else {
             mOnUserInfoListener.onUserInfoError(mContext.getString(R.string.google_error_signin_failed));
         }
+    }
+
+    private void signOut() {
+        Auth.GoogleSignInApi.signOut(mGoogleApiClient).setResultCallback(
+                new ResultCallback<Status>() {
+                    @Override
+                    public void onResult(Status status) {
+                        mOnLogOutResultListener.onLogOut();
+                    }
+                });
     }
 }

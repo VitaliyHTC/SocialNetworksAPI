@@ -1,20 +1,17 @@
 package com.vitaliyhtc.socialnetworksapi;
 
 import android.app.Application;
-import android.content.Context;
 
 import com.google.android.gms.auth.api.Auth;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.gms.common.api.GoogleApiClient;
 
 public class MyApplication extends Application {
-    private static MyApplication sMyApplication;
     private static GoogleApiClient sGoogleApiClient;
 
     @Override
     public void onCreate() {
         super.onCreate();
-        sMyApplication = this;
         initGoogleApi();
     }
 
@@ -30,9 +27,5 @@ public class MyApplication extends Application {
 
     public static GoogleApiClient getGoogleApiClient() {
         return sGoogleApiClient;
-    }
-
-    public static Context getAppContext() {
-        return sMyApplication;
     }
 }
